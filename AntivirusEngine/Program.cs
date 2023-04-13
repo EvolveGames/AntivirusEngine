@@ -238,7 +238,6 @@ namespace AntivirusEngine
                 int matchIndex = IndexOf(data, signature);
                 if (matchIndex != -1)
                 {
-                    Console.WriteLine(Encoding.UTF8.GetString(virusSignature[i]));
                     return (true, i);
                 }
             }
