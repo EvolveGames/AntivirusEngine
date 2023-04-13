@@ -13,7 +13,6 @@ namespace AntivirusEngine
         {
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
-
             Console.Title = "AntivirusEngine";
 
             Console.WriteLine("Antivir Engine");
