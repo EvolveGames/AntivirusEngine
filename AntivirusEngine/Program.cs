@@ -16,60 +16,63 @@ namespace AntivirusEngine
             Console.InputEncoding = Encoding.UTF8;
             Console.Title = "AntivirusEngine";
 
-            Console.WriteLine("Basic Antivirus Engine");
-            Console.Write("FileToCheck: ");
-
-            string input = Console.ReadLine().Replace("\"", string.Empty);
-
-            if(File.Exists(input))
+            while(true)
             {
-                bool isVirus = false;
-                int virusTypeIndex = 0;
-                using (FileStream fs = new FileStream(input, FileMode.Open, FileAccess.Read))
-                {
-                    byte[] buffer = new byte[1024 * 1024];
-                    int read = 0;
-                    long offset = 0;
-                    while((read = fs.Read(buffer, 0, buffer.Length)) != 0)
-                    {
-                        using(MemoryStream ms = new MemoryStream())
-                        {
-                            ms.Write(buffer, 0, read);
-                            (bool virusCheck, int index) = AntivirusEngine.AntivirCheckInBytesWithVirusType(ms.ToArray());
-                            Console.WriteLine($"[*] Checking Sector: ({offset}, {read})");
-                            if (virusCheck) { isVirus = true; virusTypeIndex = index; break; }
-                        }
-                        offset += read;
-                    }
-                }
+                Console.WriteLine("Basic Antivirus Engine");
+                Console.Write("FileToCheck: ");
 
-                if (isVirus)
+                string input = Console.ReadLine().Replace("\"", string.Empty);
+
+                if (File.Exists(input))
                 {
-                    Console.WriteLine($"[!] This file is a possible threat: {AntivirusEngine.GetVirusSignatureName(virusTypeIndex)}");
+                    bool isVirus = false;
+                    int virusTypeIndex = 0;
+                    using (FileStream fs = new FileStream(input, FileMode.Open, FileAccess.Read))
+                    {
+                        byte[] buffer = new byte[1024 * 1024];
+                        int read = 0;
+                        long offset = 0;
+                        while ((read = fs.Read(buffer, 0, buffer.Length)) != 0)
+                        {
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                ms.Write(buffer, 0, read);
+                                (bool virusCheck, int index) = AntivirusEngine.AntivirCheckInBytesWithVirusType(ms.ToArray());
+                                Console.WriteLine($"[*] Checking Sector: ({offset}, {read})");
+                                if (virusCheck) { isVirus = true; virusTypeIndex = index; break; }
+                            }
+                            offset += read;
+                        }
+                    }
+
+                    if (isVirus)
+                    {
+                        Console.WriteLine($"[!] This file is a possible threat: {AntivirusEngine.GetVirusSignatureName(virusTypeIndex)}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[+] This file should be virus free");
+                    }
+                    //byte[] data = File.ReadAllBytes(input);
+                    //Console.WriteLine("File Load Completed\n");
+
+                    //(bool virusCheck, int index) = AntivirusEngine.AntivirCheckInBytesWithVirusType(data);
+
+                    //if(virusCheck)
+                    //{
+                    //    Console.WriteLine($"[!] This file is a possible threat: {AntivirusEngine.GetVirusSignatureName(index)}");
+                    //}
+                    //else
+                    //{
+                    //    Console.WriteLine($"[+] This file should be virus free");
+                    //}
                 }
                 else
                 {
-                    Console.WriteLine($"[+] This file should be virus free");
+                    Console.WriteLine("File Does Not Exist");
                 }
-                //byte[] data = File.ReadAllBytes(input);
-                //Console.WriteLine("File Load Completed\n");
-
-                //(bool virusCheck, int index) = AntivirusEngine.AntivirCheckInBytesWithVirusType(data);
-
-                //if(virusCheck)
-                //{
-                //    Console.WriteLine($"[!] This file is a possible threat: {AntivirusEngine.GetVirusSignatureName(index)}");
-                //}
-                //else
-                //{
-                //    Console.WriteLine($"[+] This file should be virus free");
-                //}
+                Console.ReadKey(true);
             }
-            else
-            {
-                Console.WriteLine("File Does Not Exist");
-            }
-            Console.ReadKey(true);
         }
     }
     public class AntivirusEngine
