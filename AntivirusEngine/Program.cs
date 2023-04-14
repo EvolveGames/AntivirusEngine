@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Reflection;
 
 namespace AntivirusEngine
 {
@@ -15,26 +16,54 @@ namespace AntivirusEngine
             Console.InputEncoding = Encoding.UTF8;
             Console.Title = "AntivirusEngine";
 
-            Console.WriteLine("Antivir Engine");
+            Console.WriteLine("Basic Antivirus Engine");
             Console.Write("FileToCheck: ");
 
             string input = Console.ReadLine().Replace("\"", string.Empty);
 
             if(File.Exists(input))
             {
-                byte[] data = File.ReadAllBytes(input);
-                Console.WriteLine("File Load Completed");
-
-                (bool virusCheck, int index) = AntivirusEngine.AntivirCheckInBytesWithVirusType(data);
-
-                if(virusCheck)
+                bool isVirus = false;
+                int virusTypeIndex = 0;
+                using (FileStream fs = new FileStream(input, FileMode.Open, FileAccess.Read))
                 {
-                    Console.WriteLine($"[!] This file is a possible threat: {AntivirusEngine.GetVirusSignatureName(index)}");
+                    byte[] buffer = new byte[1024 * 1024];
+                    int read = 0;
+                    long offset = 0;
+                    while((read = fs.Read(buffer, 0, buffer.Length)) != 0)
+                    {
+                        using(MemoryStream ms = new MemoryStream())
+                        {
+                            ms.Write(buffer, 0, read);
+                            (bool virusCheck, int index) = AntivirusEngine.AntivirCheckInBytesWithVirusType(ms.ToArray());
+                            Console.WriteLine($"[*] Checking Sector: ({offset}, {read})");
+                            if (virusCheck) { isVirus = true; virusTypeIndex = index; break; }
+                        }
+                        offset += read;
+                    }
+                }
+
+                if (isVirus)
+                {
+                    Console.WriteLine($"[!] This file is a possible threat: {AntivirusEngine.GetVirusSignatureName(virusTypeIndex)}");
                 }
                 else
                 {
                     Console.WriteLine($"[+] This file should be virus free");
                 }
+                //byte[] data = File.ReadAllBytes(input);
+                //Console.WriteLine("File Load Completed\n");
+
+                //(bool virusCheck, int index) = AntivirusEngine.AntivirCheckInBytesWithVirusType(data);
+
+                //if(virusCheck)
+                //{
+                //    Console.WriteLine($"[!] This file is a possible threat: {AntivirusEngine.GetVirusSignatureName(index)}");
+                //}
+                //else
+                //{
+                //    Console.WriteLine($"[+] This file should be virus free");
+                //}
             }
             else
             {
@@ -232,7 +261,7 @@ namespace AntivirusEngine
             {
                 byte[] signature = virusSignature[i];
 
-                Console.WriteLine($"Checking: {virusSignatureType[i]}");
+                //Console.WriteLine($"Checking: {virusSignatureType[i]}");
 
                 int matchIndex = IndexOf(data, signature);
                 if (matchIndex != -1)
